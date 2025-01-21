@@ -1,7 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\Lab 1",
+    "\\Lab 1\\Assembly Code"
   ],
-  "SelectedNode": "\\C:\\Users\\amindel1\\Source\\Repos\\JLab-II",
+  "SelectedNode": "\\Lab 1\\Assembly Code\\echocharacter.s",
   "PreviewInSolutionExplorer": false
 }

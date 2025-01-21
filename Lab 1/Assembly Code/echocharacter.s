@@ -1,8 +1,4 @@
-@ echocharacter.s
-@ Prompts user to enter a character and echoes it.
-@ 2017-09-29: Bob Plantz
-
-@ Define my Raspberry Pi
+ Define my Raspberry Pi
         .cpu    cortex-a53
         .fpu    neon-fp-armv8
         .syntax unified         @ modern syntax
@@ -10,19 +6,20 @@
 @ Useful source code constants
         .equ    STDIN,0
         .equ    STDOUT,1
-        .equ    aLetter,-5
-        .equ    local,8
+        .equ    aLetter,-16
+        .equ    local,16
 
 @ Constant program data
         .section  .rodata
         .align  2
 promptMsg:
-        .asciz	 "Enter one character: "
+        .asciz   "Please type text of 15 characters: "
         .equ    promptLngth,.-promptMsg
 responseMsg:
-        .asciz	 "You entered: "
+        .asciz   " instances of LMU\n"
         .equ    responseLngth,.-responseMsg
-
+response:
+        .space 16
 @ Program code
         .text
         .align  2
@@ -40,20 +37,23 @@ main:
         mov     r2, promptLngth
         bl      write
 
+
         mov     r0, STDIN       @ from keyboard
         add     r1, fp, aLetter @ address of aLetter
-        mov     r2, 1           @ one char
+        mov     r2, 15           @ one char
         bl      read
+
+        mov     r0, STDOUT      @ echo user's character
+        add     r1, fp, aLetter @ address of aLetter
+        mov     r2, 15           @ one char
+        bl      write
 
         mov     r0, STDOUT      @ nice message for user
         ldr     r1, responseMsgAddr
         mov     r2, responseLngth
         bl      write
 
-        mov     r0, STDOUT      @ echo user's character
-        add     r1, fp, aLetter @ address of aLetter
-        mov     r2, 1           @ one char
-        bl      write
+
 
         mov     r0, 0           @ return 0;
         add     sp, sp, local   @ deallocate local var
@@ -68,3 +68,21 @@ promptMsgAddr:
         .word   promptMsg
 responseMsgAddr:
         .word   responseMsg
+@ Define my Raspberry Pi
+        .cpu    cortex-a53
+        .fpu    neon-fp-armv8
+        .syntax unified         @ modern syntax
+
+@ Useful source code constants
+        .equ    STDIN,0
+        .equ    STDOUT,1
+        .equ    aLetter,-16
+        .equ    local,16
+
+@ Constant program data
+        .section  .rodata
+        .align  2
+promptMsg:
+        .asciz   "Please type text of 15 characters: "
+        .equ    promptLngth,.-promptMsg
+responseMsg:

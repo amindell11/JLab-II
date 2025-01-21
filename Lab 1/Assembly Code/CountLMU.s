@@ -42,11 +42,6 @@ main:
         add     r1, fp, aLetter @ address of aLetter
         mov     r2, 15           @ one char
         bl      read
-
-        mov     r0, STDOUT      @ echo user's character
-        add     r1, fp, aLetter @ address of aLetter
-        mov     r2, 15           @ one char
-        bl      write
         
         add r1, fp, aLetter
         bl count_LMU
@@ -64,7 +59,6 @@ main:
         b main
 count_LMU: 
         PUSH {R3} @ Save R3 and R4 on the stack 
-
         MOV R2, #0 @ Initialize count to 0 
         LDR R3, =response
         str R2, [R3]

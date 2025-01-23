@@ -56,6 +56,11 @@ main:
         mov     r2, responseLngth
         bl      write
         
+        LDR R1, =response
+        ldr r0, [r1]
+        subs r0, r0, #48
+        bl binLED
+
         b main
 count_LMU: 
         PUSH {R3} @ Save R3 and R4 on the stack 

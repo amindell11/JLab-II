@@ -30,7 +30,10 @@
         .equ    INPUT,0         @ use pin for input
         .equ    OUTPUT,1        @ use pin for ouput
         .equ    ONE_SEC,1       @ sleep one second
+        .equ    THREE_SEC,3       @ sleep one second
         .equ    PIN17,17        @ pin set bit
+        .equ    PIN18,18        @ pin set bit
+        .equ    PIN27,27        @ pin set bit
         .equ    FILE_DESCRP_ARG,0   @ file descriptor
         .equ    DEVICE_ARG,4        @ device address
         .equ    STACK_ARGS,8    @ includes sp 8-byte align
@@ -48,9 +51,9 @@ memErr:
 @ The program
         .text
         .align  2
-        .global main
-        .type   main, %function
-main:
+        .global binLED
+        .type   binLED, %function
+binLED:  
         sub     sp, sp, 24      @ space for saving regs
                                 @ (keeping 8-byte sp align)
         str     r4, [sp, 4]     @ save r4
@@ -60,6 +63,7 @@ main:
         str     lr, [sp, 20]    @      lr
         add     fp, sp, 20      @ set our frame pointer
         sub     sp, sp, STACK_ARGS
+        mov R6, R0
 
 @ Open /dev/gpiomem for read/write and syncing        
         ldr     r0, deviceAddr  @ address of /dev/gpiomem
@@ -96,25 +100,61 @@ mmapOK:
         mov     r1, PIN17       @ pin to blink
         mov     r2, OUTPUT      @ it's an output
         bl      gpioPinFSelect  @ select function
+        
+        mov     r0, r5          @ programming memory
+        mov     r1, PIN18       @ pin to blink
+        mov     r2, OUTPUT      @ it's an output
+        bl      gpioPinFSelect  @ select function
+        
+        mov     r0, r5          @ programming memory
+        mov     r1, PIN27       @ pin to blink
+        mov     r2, OUTPUT      @ it's an output
+        bl      gpioPinFSelect  @ select function
 
-        mov     r6, 5           @ blink five times
+       @ mov     r6, #3           @ blink five times
 loop:
         mov     r0, r5          @ GPIO programming memory
         mov     r1, PIN17
-        bl      gpioPinClr
-        mov     r0, ONE_SEC     @ wait a second
-        bl      sleep
-        mov     r0, r5
-        mov     r1, PIN17
         bl      gpioPinSet
-        mov     r0, ONE_SEC     @ wait a second
-        bl      sleep
-        subs    r6, r6, 1       @ decrement counter
-        bgt     loop            @ loop until 0
         
+        mov     r0, r5          @ GPIO programming memory
+        mov     r1, PIN18
+        bl      gpioPinSet
+        
+        mov     r0, r5          @ GPIO programming memory
+        mov     r1, PIN27
+        bl      gpioPinSet
+led1:
+        TST R6, 0b00000001
+        beq led2
+
+        mov     r0, r5          @ GPIO programming memory
+        mov     r1, PIN17
+        bl      gpioPinClr
+led2:
+        TST R6, 0b00000010
+        beq led3
+        
+        mov     r0, r5          @ GPIO programming memory
+        mov     r1, PIN18
+        bl      gpioPinClr
+led3:
+        TST R6, 0b00000100
+        beq end
+        
+        mov     r0, r5          @ GPIO programming memory
+        mov     r1, PIN27
+        bl      gpioPinClr
+        
+        b end
+        
+        
+
+end:
         mov     r0, r5          @ memory to unmap
         mov     r1, PAGE_SIZE   @ amount we mapped
         bl      munmap          @ unmap it
+        b closeDev
 
 closeDev:
         mov     r0, r4          @ /dev/gpiomem file descriptor

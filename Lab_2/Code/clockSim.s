@@ -1,12 +1,12 @@
 .global _start
 
 .equ DISPLAY_BASE, 0xFF200020      @ Base address for the seconds and minutes display
-.equ DISPLAY_HOURS_BASE, 0xFF200024  @ Base address for the hours display
+.equ DISPLAY_HOURS_BASE, 0xFF200030  @ Base address for the hours display
 
 _start:
     MOV r0, #0                @ Initialize seconds counter to 0
-    MOV r6, #0                @ Initialize minutes counter to 0
-    MOV r7, #0                @ Initialize hours counter to 0
+    MOV r6, #58                @ Initialize minutes counter to 0
+    MOV r7, #23                @ Initialize hours counter to 0
 
 count_loop:
     CMP r0, #60               @ Check if the seconds counter has reached 60
@@ -63,7 +63,7 @@ continue_count:
 sleep_one_second:
     PUSH {r4, r5, lr}      @ Save registers and return address
 
-    LDR r4, =0x00001000      @ Load 1,000,000 (1 MHz clock, 1 second delay)
+    LDR r4, =0x00100000      @ Load 1,000,000 (1 MHz clock, 1 second delay)
 loop_outer:
     SUBS r4, r4, #1        @ Decrement outer loop counter
     BNE loop_outer         @ If not zero, keep looping

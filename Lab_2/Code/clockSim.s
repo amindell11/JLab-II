@@ -29,7 +29,13 @@ check_hours:
     MOV r7, #0                @ Reset the hours counter
 
 continue_count:
-    PUSH {r0}                 @ Save the current seconds counter value
+    BL sleep_one_second       @ Pause for 1 second
+    ADD r0, r0, #1            @ Increment the seconds counter
+	bl display_clock
+    B count_loop              @ Repeat the loop
+
+display_clock:
+    PUSH {lr, r0, r5, r6, r7}                 @ Save the current seconds counter value
 
     @ Calculate seconds for the display
     BL get_led_code           @ Call the subroutine to calculate display value
@@ -53,11 +59,8 @@ continue_count:
     LDR r3, =DISPLAY_HOURS_BASE @ Load the base address for the hours display
     STR r1, [r3]              @ Write the hours value to the display
 
-    POP {r0}                  @ Restore the seconds counter value
-
-    BL sleep_one_second       @ Pause for 1 second
-    ADD r0, r0, #1            @ Increment the seconds counter
-    B count_loop              @ Repeat the loop
+    POP {lr, r0, r5, r6, r7}                  @ Restore the seconds counter value
+	Bx lr
 
 
 sleep_one_second:

@@ -3,3 +3,5 @@
 
 ### VisualStudioCode ###
 .vs/*
+.vs/VSWorkspaceState.json
+.vs/slnx.sqlite

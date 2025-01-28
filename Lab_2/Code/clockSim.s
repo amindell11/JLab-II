@@ -1,3 +1,8 @@
+@EECE 3200
+@Arye Mindell
+@clock simulator: testbench for clock subroutines. Uses CPULator Seven-segment displays to debug output
+
+
 .global _start
 
 .equ DISPLAY_BASE, 0xFF200020      @ Base address for the seconds and minutes display
@@ -35,7 +40,7 @@ continue_count:
     B count_loop              @ Repeat the loop
 
 display_clock:
-    PUSH {lr, r0, r5, r6, r7}                 @ Save the current seconds counter value
+    PUSH {r0, r5, r6, r7, lr}                 @ Save the current seconds counter value
 
     @ Calculate seconds for the display
     BL get_led_code           @ Call the subroutine to calculate display value
@@ -59,7 +64,7 @@ display_clock:
     LDR r3, =DISPLAY_HOURS_BASE @ Load the base address for the hours display
     STR r1, [r3]              @ Write the hours value to the display
 
-    POP {lr, r0, r5, r6, r7}                  @ Restore the seconds counter value
+    POP {r0, r5, r6, r7, lr}                  @ Restore the seconds counter value
 	Bx lr
 
 

@@ -1,0 +1,84 @@
+% Specifications
+global V_CC V_T VBE_On
+A_vo_min = 120; % Minimum required voltage gain
+Rin_min = 1; % Minimum input resistance (Kohm)
+R_L = 10; % Load resistance (Kohm)
+V_CE_Sat = 0.6; % Collector-emitter saturation voltage (V)
+beta = 150;
+Rout_max = .004;
+
+% Constants
+V_T = 0.026; % Thermal voltage (V)
+
+%Design
+V_CC = 15; % Supply voltage (V)
+VCE_1 = 7; %V
+IC_1 = 1.5; %mA
+VCE_2 = 12;
+IC_2 = 20;
+
+RE_2 = 13;
+
+gm2 = IC_2/V_T;
+disp(1/gm2);
+
+% Assumptions
+VBE_On = 0.7; % Base-emitter turn-on voltage (V)
+
+% Q-Point Calculation
+syms RE_1 RC_1;
+syms RE_2 Rth_2; 
+
+% Symbolic variable for emitter resistance
+eq0 = V_CC - IC_1 * RE_1 - VCE_1 - IC_1 * RC_1 == 0;
+%RE_1 = double(solve(eq0, RE_1)) % Solve for R_E
+
+eq1 = V_CC - IC_2 * RE_2 - VCE_2 ==0;
+%RE_2 = double(solve(eq0, RE_2)) % Solve for R_E
+
+[R1_2,R2_2] = getBiasing(IC_2,Rth_2, RE_2);
+
+RB_2 = parallel_resistance(Rth_2, RC_1);
+RB_Refl = (V_T/I_C2)+RB_2/(beta+1);
+Rout_2 = parallel_resistance(RE_2,RB_Refl);
+eqn2 = Rout_2 == Rout_max;
+[RE_1_sol, RE_2_sol, RC_1_sol] = solve([eq0, eq1, eqn2], [RE_1, RE_2, RC_1]);
+
+% Convert to numerical values
+RE_1 = double(RE_1_sol)
+RE_2 = double(RE_2_sol)
+RC_1 = double(RC_1_sol)
+
+% Compute biasing resistances
+[R1_1, R2_1] = getBiasing(IC_1, Rin_min, RE_1);
+Rin_2 = parallel_resistance(RC_1, R2_2, R1_2);
+
+% Compute R1_2 and R2_2 using substituted values
+[R1_2, R2_2] = getBiasing(IC_2, Rin_min, RE_2);
+
+% Output Swing Calculation
+swing = min(IC_1 * RC_1, min(VCE_1 - V_CE_Sat, V_CC - VCE_1));
+
+% Helper function to compute parallel resistance
+function R_p = parallel_resistance(varargin)
+    R_p = 1 / sum(1 ./ [varargin{:}]);
+end
+
+function [R1,R2] = getBiasing(I_C, R_in, R_E)
+    global V_CC VBE_On
+    % Voltage Divider Bias Calculation
+    syms R1 R2; % Symbolic variables for voltage divider resistors
+    assume(R1 > 0); % Ensure R1 is positive
+    assume(R2 > 0); % Ensure R2 is positive
+    V_th = R1 * V_CC / (R1 + R2); % Thevenin voltage
+    R_th = parallel_resistance(R1, R2); % Thevenin resistance
+    
+    % Equations for voltage divider design
+    eq1 = V_CC - I_C * R_E - VBE_On - V_th == 0;
+    eq2 = R_th == R_in;
+    
+    % Solve for R1 and R2
+    solution = solve([eq1, eq2], [R1, R2]);
+    R1 = solution.R1;
+    R2 = solution.R2;
+end
